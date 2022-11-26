@@ -4,6 +4,8 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const nodemailer=require('nodemailer');
 require('dotenv').config();
+var auth = require('../services/authentication');
+var checkRole = require('../services/checkRole')
 
 
 router.post('/signup', (req, res)=>{
@@ -92,4 +94,60 @@ router.post('/forgotPassword', (req, res)=>{
     })
 })
 
+router.get('/get', auth.authenticateToken,checkRole.checkRole,(req, res)=>{
+    var query = "select id, email, contactNumber, status from user where role='user'";
+    connection.query(query, (error, results)=>{
+        if(!error){
+            return res.status(200).json(results);
+        }else{
+            return res.status(500).json(error);
+        }
+    })
+})
+
+router.patch('/update', auth.authenticateToken,checkRole.checkRole, (req, res)=>{
+    let user = req.body;
+    var query= "update user set status=? where id=?";
+    connection.query(query,[user.status, user.id], (error, results)=>{
+        if(!error){
+            if(results.affectedRows==0){
+                return res.status(404).json({message: "User id does not exist."})
+            }
+            return res.status(200).json({message:"User Update Successfully."})
+        }else{
+            return res.status(500).json(error);
+        }
+    });
+
+})
+
+router.get('/checkToken', auth.authenticateToken, (req, res)=>{
+    return res.status(200).json({message:"true"});
+})
+
+router.post('/changePassword', auth.authenticateToken, (req, res)=>{
+    const user = req.body;
+    const email = res.locals.email;
+    var query = "select * from user where email=? and password=?";
+    connection.query(query, [email, user.oldPassword], (error, results)=>{
+        if(!error){
+            if(results.length<=0){
+                return res.status(400).json({message:"Incorrect Old Password"})
+            }else if(results[0].password==user.oldPassword){
+                query = "update user set password=? where email=?";
+                connection.query(query, [user.newPassword, email], (error, results)=>{
+                    if(!error){
+                        return res.status(200).json({message:"Password Updated SUccessfully."})
+                    }else{
+                        return res.status(500).json(error);
+                    }
+                })
+            }else{
+                return res.status(400).json({message:"Something went wrong, please try again later"})
+            }
+        }else{
+            return res.status(500).json(error);
+        }
+    })
+})
 module.exports= router;

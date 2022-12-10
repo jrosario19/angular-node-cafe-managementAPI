@@ -29,6 +29,7 @@
     "mysql2": "^2.3.3",
     "nodemailer": "^6.8.0",
     "path": "^0.12.7",
+    "phantomjs": "^2.1.7",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

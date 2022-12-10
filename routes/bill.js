@@ -13,6 +13,7 @@ router.post('/genereteReport', auth.authenticateToken, (req, res, next)=>{
     const generatedUuid = uuid.v1();
     const orderDetails = req.body;
     var productDetailsReport = JSON.parse(orderDetails.productDetails);
+    var option={"phantomPath": "./node_modules/phantomjs/bin/phantomjs",}
     query = "insert into bill(name, uuid, email, contactNumber, paymentMethod, total, productDetails, createdBy) values(?,?,?,?,?,?,?,?)";
     connection.query(query, [orderDetails.name, generatedUuid, orderDetails.email, orderDetails.contactNumber, orderDetails.paymentMethod,orderDetails.totalAmount,orderDetails.productDetails, res.locals.email], (error, result)=>{
         if(!error){
@@ -20,7 +21,7 @@ router.post('/genereteReport', auth.authenticateToken, (req, res, next)=>{
                 if(error){
                     return res.status(500).json(error);
                 }else{
-                    pdf.create(results).toFile('./generated_pdf/'+generatedUuid+'.pdf', function(error, data){
+                    pdf.create(results,option).toFile('./generated_pdf/'+generatedUuid+'.pdf', function(error, data){
                         if(error){
                             console.log(error);
                             return res.status(500).json(error);

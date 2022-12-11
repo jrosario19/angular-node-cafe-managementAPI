@@ -21,7 +21,7 @@ router.post('/genereteReport', auth.authenticateToken, (req, res, next)=>{
                 if(error){
                     return res.status(500).json(error);
                 }else{
-                    pdf.create(results,  {/* ... */ childProcessOptions: { env: { OPENSSL_CONF: '/dev/null' }}}).toFile('./generated_pdf/'+generatedUuid+'.pdf', function(error, data){
+                    pdf.create(results).toFile('./generated_pdf/'+generatedUuid+'.pdf', function(error, data){
                         if(error){
                             console.log(error);
                             return res.status(500).json(error);
